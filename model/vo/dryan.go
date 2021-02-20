@@ -1,6 +1,8 @@
 package vo
 
-import "time"
+import (
+	"time"
+)
 
 type AddItemReq struct {
 	Name           string `json:"name"`
@@ -28,4 +30,14 @@ type ItemVO struct {
 	OfficialPrice  int       `json:"officialPrice"`  //官方价格
 	DirectorPrice  int       `json:"directorPrice"`  // 董事价格
 	CreateTime     time.Time `json:"createTime"`
+}
+
+type PrePurchase struct {
+	Name  string             `json:"name" binding:"required"` //预设名称，唯一
+	Items []*PrePurchaseItem `json:"items"`
+}
+
+type PrePurchaseItem struct {
+	ItemId string `json:"itemId"`
+	Count  int    `json:"count"`
 }

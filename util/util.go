@@ -4,7 +4,9 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"github.com/google/uuid"
 	"gopkg.in/mgo.v2/bson"
+	"strings"
 )
 
 func StringToObjectId(id string) (bson.ObjectId, error) {
@@ -26,4 +28,8 @@ func StringsToObjectIds(ids []string) []bson.ObjectId {
 		}
 	}
 	return objIds
+}
+
+func NewUUID() string {
+	return strings.Replace(uuid.New().String(), "-", "", -1)
 }
