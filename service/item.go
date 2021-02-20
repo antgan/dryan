@@ -54,7 +54,16 @@ func populateItemVO(item do.Item) *vo.ItemVO {
 
 func QueryItemByIds(ctx context.Context, req *vo.QueryByIdsReq) ([]*vo.ItemVO, error) {
 	results := make([]*vo.ItemVO, 0)
-	objIds := util.StringsToObjectIds(req.Ids)
+	items, err := queryItemByIds(ctx, req.Ids)
+	if err != nil {
+		return results, err
+	}
+	results = populateItemVOs(items, results)
+	return results, nil
+}
+
+func queryItemByIds(ctx context.Context, ids []string) ([]do.Item, error) {
+	objIds := util.StringsToObjectIds(ids)
 	q := bson.M{"_id": objIds}
 	items := make([]do.Item, 0)
 	err := dao.ItemOp.Find(ctx, &items, q, nil, nil, 0, 0)
@@ -62,10 +71,7 @@ func QueryItemByIds(ctx context.Context, req *vo.QueryByIdsReq) ([]*vo.ItemVO, e
 		logutil.Errorf("query item by ids failed, err:%v", err)
 		return nil, err
 	}
-
-	results = populateItemVOs(items, results)
-
-	return results, nil
+	return items, nil
 }
 
 func QueryAllItem(ctx context.Context) ([]*vo.ItemVO, error) {

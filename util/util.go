@@ -33,3 +33,12 @@ func StringsToObjectIds(ids []string) []bson.ObjectId {
 func NewUUID() string {
 	return strings.Replace(uuid.New().String(), "-", "", -1)
 }
+
+func Contains(s []string, e string) bool {
+	for _, a := range s {
+		if a == e {
+			return true
+		}
+	}
+	return false
+}

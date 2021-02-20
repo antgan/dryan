@@ -41,3 +41,22 @@ type PrePurchaseItem struct {
 	ItemId string `json:"itemId"`
 	Count  int    `json:"count"`
 }
+
+type Purchase struct {
+	UserId     string          `json:"userId"`
+	SerialId   string          `json:"serialId"` //流水号
+	Items      []*PurchaseItem `json:"items"`
+	TotalPrice int             `json:"totalPrice"`
+	CreateTime time.Time       `json:"createTime"`
+}
+
+type PurchaseItem struct {
+	ItemId   string `json:"itemId"`
+	ItemName string `json:"itemName"`
+	Count    int    `json:"count"`
+	Price    int    `json:"price"` //进货单价
+}
+
+type QueryByUserIdReq struct {
+	UserId string `json:"userId" binding:"required"`
+}

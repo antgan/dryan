@@ -30,10 +30,11 @@ type Stock struct {
 type PurchaseRecord struct {
 	Id         bson.ObjectId `bson:"_id"`
 	UserId     string        `bson:"user_id"`
+	UserType   string        `bson:"user_type"`
 	SerialId   string        `bson:"serial_id"` //流水号
 	ItemId     string        `bson:"item_id"`
 	Count      int           `bson:"count"`
-	Price      int           `bson:"price"`
+	Price      int           `bson:"price"` //单价
 	CreateTime time.Time     `bson:"create_time"`
 }
 

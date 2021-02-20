@@ -9,3 +9,8 @@ const (
 	MONGO_C_DRYAN_PRE_PURCHASE    = "pre_purchase"
 	MONGO_C_DRYAN_USER            = "user"
 )
+
+const (
+	DRYAN_USER_TYPE_OFFICIAL = "official"
+	DRYAN_USER_TYPE_DIRECTOR = "director"
+)
