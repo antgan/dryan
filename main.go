@@ -9,9 +9,11 @@ import (
 
 func main() {
 	g := gin.Default()
-	testGroup := g.Group("/test")
+	dryanGroup := g.Group("/dryan")
 	{
-		testGroup.POST("/post1", controller.TestMethod)
+		dryanGroup.POST("/item/add", controller.AddItem)
+		dryanGroup.POST("/item/get-all", controller.QueryAllItem)
 	}
+
 	g.Run(":" + common.Config.PORT)
 }
