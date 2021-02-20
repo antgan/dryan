@@ -43,20 +43,57 @@ type PrePurchaseItem struct {
 }
 
 type Purchase struct {
-	UserId     string          `json:"userId"`
-	SerialId   string          `json:"serialId"` //流水号
-	Items      []*PurchaseItem `json:"items"`
-	TotalPrice int             `json:"totalPrice"`
-	CreateTime time.Time       `json:"createTime"`
+	UserId             string          `json:"userId"`
+	SerialId           string          `json:"serialId"` //流水号
+	Items              []*PurchaseItem `json:"items"`
+	TotalPurchasePrice int             `json:"totalPrice"`
+	CreateTime         time.Time       `json:"createTime"`
 }
 
 type PurchaseItem struct {
-	ItemId   string `json:"itemId"`
-	ItemName string `json:"itemName"`
-	Count    int    `json:"count"`
-	Price    int    `json:"price"` //进货单价
+	ItemId        string `json:"itemId"`
+	ItemName      string `json:"itemName"`
+	Count         int    `json:"count"`
+	PurchasePrice int    `json:"purchasePrice"` //进货单价
 }
 
 type QueryByUserIdReq struct {
 	UserId string `json:"userId" binding:"required"`
+}
+
+//销售记录
+type SaleRecordVO struct {
+	UserId   string `json:"userId"`
+	SerialId string `json:"serialId"` //流水号
+
+	Items []*SaleItem `json:"items"`
+
+	Profit     int       `json:"profit"` //利润
+	CreateTime time.Time `json:"createTime"`
+	UpdateTime time.Time `json:"updateTime"`
+
+	//顾客信息
+	CustomerName  string    `json:"customerName"`
+	Address       string    `json:"address"`
+	Logistics     string    `json:"logistics"`
+	ExpressNumber string    `json:"expressNumber"`
+	ExpressTime   time.Time `json:"expressTime"`
+}
+
+type SaleItem struct {
+	ItemId        string `json:"itemId"`
+	ItemName      string `json:"itemName"`
+	Count         int    `json:"count"`
+	PurchasePrice int    `json:"purchasePrice"`
+	SalePrice     int    `json:"salePrice"`
+}
+
+type UpdateCustomerInfoReq struct {
+	UserId   string `json:"userId"`
+	SerialId string `json:"serialId"` //流水号
+	//顾客信息
+	CustomerName  string `json:"customerName"`
+	Address       string `json:"address"`
+	Logistics     string `json:"logistics"`
+	ExpressNumber string `json:"expressNumber"`
 }

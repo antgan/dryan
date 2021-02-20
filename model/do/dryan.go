@@ -13,7 +13,7 @@ type Item struct {
 	DiscountPrice1 int           `bson:"discount_price_1"` //优惠1
 	DiscountPrice2 int           `bson:"discount_price_2"` //优惠2
 	OfficialPrice  int           `bson:"official_price"`   //官方价格
-	DirectorPrice  int           `bson:"director_price"`   // 董事价格
+	DirectorPrice  int           `bson:"director_price"`   //董事价格
 	CreateTime     time.Time     `bson:"create_time"`
 }
 
@@ -43,14 +43,22 @@ type SaleRecord struct {
 	Id     bson.ObjectId `bson:"_id"`
 	UserId string        `bson:"user_id"`
 
-	SerialId      string    `bson:"serial_id"` //流水号
-	ItemId        string    `bson:"item_id"`
-	Count         int       `bson:"count"`
-	PurchasePrice int       `bson:"purchase_price"`
-	SalePrice     int       `bson:"sale_price"`
-	Profit        int       `bson:"profit"` //利润
-	CreateTime    time.Time `bson:"create_time"`
-	UpdateTime    time.Time `bson:"update_time"`
+	SerialId      string `bson:"serial_id"` //流水号
+	ItemId        string `bson:"item_id"`
+	Count         int    `bson:"count"`
+	PurchasePrice int    `bson:"purchase_price"`
+	SalePrice     int    `bson:"sale_price"`
+	Profit        int    `bson:"profit"` //利润
+
+	CreateTime time.Time `bson:"create_time"`
+	UpdateTime time.Time `bson:"update_time"`
+}
+
+type SaleRecordSummary struct {
+	Id       bson.ObjectId `bson:"_id"`
+	UserId   string        `bson:"user_id"`
+	SerialId string        `bson:"serial_id"` //流水号
+	Profit   int           `bson:"profit"`    //总利润
 
 	//顾客信息
 	CustomerName  string    `bson:"customer_name"`
@@ -58,6 +66,9 @@ type SaleRecord struct {
 	Logistics     string    `bson:"logistics"`
 	ExpressNumber string    `bson:"express_number"`
 	ExpressTime   time.Time `bson:"express_time"`
+
+	CreateTime time.Time `bson:"create_time"`
+	UpdateTime time.Time `bson:"update_time"`
 }
 
 //预设进货套餐

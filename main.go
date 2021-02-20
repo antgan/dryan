@@ -22,6 +22,11 @@ func main() {
 		//入货管理
 		dryanGroup.POST("/purchase/add", controller.AddPurchaseRecord)
 		dryanGroup.POST("/purchase/get-all", controller.QueryAllPurchaseByUserId)
+
+		//销售管理
+		dryanGroup.POST("/sale/add", controller.AddSaleRecord)
+		dryanGroup.POST("/sale/get-all", controller.QueryAllSaleRecordUserId)
+		dryanGroup.POST("/sale/update-customer-info", controller.UpdateCustomerInfo)
 	}
 
 	g.Run(":" + common.Config.PORT)

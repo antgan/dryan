@@ -24,7 +24,15 @@ func AddPurchaseRecord(ctx context.Context, purchase *vo.Purchase) error {
 	}
 
 	//获取进货单价
-	purchasePriceMapping, err := getPurchasePriceMapping(ctx, purchase, user.Type)
+	itemIds := make([]string, 0)
+	for _, item := range purchase.Items {
+		itemIds = append(itemIds, item.ItemId)
+	}
+	itemMap, err := getItemMapByIds(ctx, itemIds)
+	if err != nil {
+		return err
+	}
+	purchasePriceMapping, err := getPurchasePriceMapping(ctx, itemMap, user.Type)
 	if err != nil {
 		return err
 	}
@@ -64,27 +72,37 @@ func AddPurchaseRecord(ctx context.Context, purchase *vo.Purchase) error {
 	return nil
 }
 
-func getPurchasePriceMapping(ctx context.Context, purchase *vo.Purchase, userType string) (map[string]int, error) {
-	resultMap := make(map[string]int)
+func getPurchasePriceMapping(ctx context.Context, itemMap map[string]*do.Item, userType string) (map[string]int, error) {
+	purchaseMap := make(map[string]int)
 
-	itemIds := make([]string, 0)
-	for _, item := range purchase.Items {
-		itemIds = append(itemIds, item.ItemId)
-	}
-
-	itemDOs, err := queryItemByIds(ctx, itemIds)
-	if err != nil {
-		return resultMap, err
-	}
-	for _, itemDO := range itemDOs {
+	//计算入货单价价格
+	for _, itemDO := range itemMap {
 		if userType == constant.DRYAN_USER_TYPE_OFFICIAL {
-			resultMap[itemDO.Id.Hex()] = itemDO.OfficialPrice
+			purchaseMap[itemDO.Id.Hex()] = itemDO.OfficialPrice
 		}
 		if userType == constant.DRYAN_USER_TYPE_DIRECTOR {
-			resultMap[itemDO.Id.Hex()] = itemDO.DirectorPrice
+			purchaseMap[itemDO.Id.Hex()] = itemDO.DirectorPrice
 		}
 	}
-	return resultMap, nil
+
+	return purchaseMap, nil
+}
+
+func getSalePriceMapping(ctx context.Context, itemMap map[string]*do.Item, discountLevel int) (map[string]int, error) {
+	saleMap := make(map[string]int)
+
+	//按照折扣算出销售价格
+	for _, itemDO := range itemMap {
+		if discountLevel == 1 {
+			saleMap[itemDO.Id.Hex()] = itemDO.DiscountPrice1
+		} else if discountLevel == 2 {
+			saleMap[itemDO.Id.Hex()] = itemDO.DiscountPrice2
+		} else {
+			saleMap[itemDO.Id.Hex()] = itemDO.SalePrice
+		}
+	}
+
+	return saleMap, nil
 }
 
 func QueryPurchaseByUserId(ctx context.Context, userId string) ([]*vo.Purchase, error) {
@@ -114,10 +132,10 @@ func QueryPurchaseByUserId(ctx context.Context, userId string) ([]*vo.Purchase, 
 	timeGroupBySerial := make(map[string]time.Time)
 	for _, record := range purchaseRecords {
 		itemsGroupBySerial[record.SerialId] = append(itemsGroupBySerial[record.SerialId], &vo.PurchaseItem{
-			ItemId:   record.ItemId,
-			ItemName: itemNameMapping[record.ItemId],
-			Count:    record.Count,
-			Price:    record.Price,
+			ItemId:        record.ItemId,
+			ItemName:      itemNameMapping[record.ItemId],
+			Count:         record.Count,
+			PurchasePrice: record.Price,
 		})
 		timeGroupBySerial[record.SerialId] = record.CreateTime
 	}
@@ -126,11 +144,11 @@ func QueryPurchaseByUserId(ctx context.Context, userId string) ([]*vo.Purchase, 
 	results := make([]*vo.Purchase, 0)
 	for serialId, items := range itemsGroupBySerial {
 		results = append(results, &vo.Purchase{
-			UserId:     userId,
-			SerialId:   serialId,
-			Items:      items,
-			TotalPrice: calcTotalPriceByItems(items),
-			CreateTime: timeGroupBySerial[serialId],
+			UserId:             userId,
+			SerialId:           serialId,
+			Items:              items,
+			TotalPurchasePrice: calcTotalPriceByItems(items),
+			CreateTime:         timeGroupBySerial[serialId],
 		})
 	}
 
@@ -152,7 +170,7 @@ func getItemNameMapping(ctx context.Context, allItemIds []string) (map[string]st
 func calcTotalPriceByItems(items []*vo.PurchaseItem) int {
 	totalPrice := 0
 	for _, item := range items {
-		totalPrice += item.Price * item.Count
+		totalPrice += item.PurchasePrice * item.Count
 	}
 	return totalPrice
 }

@@ -27,7 +27,7 @@ func AddItem(ctx context.Context, req *vo.AddItemReq) error {
 
 func QueryItemById(ctx context.Context, req *vo.QueryByIdReq) (*vo.ItemVO, error) {
 	objId, _ := util.StringToObjectId(req.Id)
-	var item do.Item
+	var item *do.Item
 	err := dao.ItemOp.FindById(ctx, objId, &item)
 	if err != nil {
 		logutil.Errorf("query item by id failed, err:%v", err)
@@ -38,7 +38,7 @@ func QueryItemById(ctx context.Context, req *vo.QueryByIdReq) (*vo.ItemVO, error
 	return itemVO, nil
 }
 
-func populateItemVO(item do.Item) *vo.ItemVO {
+func populateItemVO(item *do.Item) *vo.ItemVO {
 	itemVO := &vo.ItemVO{
 		Id:             item.Id.Hex(),
 		Name:           item.Name,
@@ -62,10 +62,10 @@ func QueryItemByIds(ctx context.Context, req *vo.QueryByIdsReq) ([]*vo.ItemVO, e
 	return results, nil
 }
 
-func queryItemByIds(ctx context.Context, ids []string) ([]do.Item, error) {
+func queryItemByIds(ctx context.Context, ids []string) ([]*do.Item, error) {
 	objIds := util.StringsToObjectIds(ids)
 	q := bson.M{"_id": objIds}
-	items := make([]do.Item, 0)
+	items := make([]*do.Item, 0)
 	err := dao.ItemOp.Find(ctx, &items, q, nil, nil, 0, 0)
 	if err != nil {
 		logutil.Errorf("query item by ids failed, err:%v", err)
@@ -77,7 +77,7 @@ func queryItemByIds(ctx context.Context, ids []string) ([]do.Item, error) {
 func QueryAllItem(ctx context.Context) ([]*vo.ItemVO, error) {
 	results := make([]*vo.ItemVO, 0)
 
-	items := make([]do.Item, 0)
+	items := make([]*do.Item, 0)
 	err := dao.ItemOp.Find(ctx, &items, nil, nil, nil, 0, 0)
 	if err != nil {
 		logutil.Errorf("query item by ids failed, err:%v", err)
@@ -88,7 +88,7 @@ func QueryAllItem(ctx context.Context) ([]*vo.ItemVO, error) {
 	return results, nil
 }
 
-func populateItemVOs(items []do.Item, results []*vo.ItemVO) []*vo.ItemVO {
+func populateItemVOs(items []*do.Item, results []*vo.ItemVO) []*vo.ItemVO {
 	for _, item := range items {
 		results = append(results, populateItemVO(item))
 	}
