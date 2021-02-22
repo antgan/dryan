@@ -64,7 +64,7 @@ func QueryItemByIds(ctx context.Context, req *vo.QueryByIdsReq) ([]*vo.ItemVO, e
 
 func queryItemByIds(ctx context.Context, ids []string) ([]*do.Item, error) {
 	objIds := util.StringsToObjectIds(ids)
-	q := bson.M{"_id": objIds}
+	q := bson.M{"_id": bson.M{"$in": objIds}}
 	items := make([]*do.Item, 0)
 	err := dao.ItemOp.Find(ctx, &items, q, nil, nil, 0, 0)
 	if err != nil {

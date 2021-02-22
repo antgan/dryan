@@ -162,14 +162,23 @@ func QueryAllSaleRecordByUserId(ctx context.Context, userId string) ([]*vo.SaleR
 	}
 
 	//聚合最终展示的vo
+	serialIds := make([]string, 0)
+	for serialId, _ := range itemsGroupBySerial {
+		serialIds = append(serialIds, serialId)
+	}
+	summaryMap, err := getSaleSummaryMapBySerialIds(ctx, userId, serialIds)
+	if err != nil {
+		logutil.Errorf("get sale summary by serial ids failed, err:%v", err)
+		return nil, err
+	}
+
 	results := make([]*vo.SaleRecordVO, 0)
 	for serialId, items := range itemsGroupBySerial {
-		summary, err := getSaleSummaryBySerialId(ctx, userId, serialId)
-		if err != nil {
-			logutil.Errorf("query sale summary failed, err:%v", err)
-			return nil, err
+		summary := summaryMap[serialId]
+		if summary == nil {
+			logutil.Errorf("summary not found, serialId:%s", serialId)
+			return nil, errors.New("summary not found")
 		}
-
 		results = append(results, &vo.SaleRecordVO{
 			UserId:        userId,
 			SerialId:      serialId,
@@ -200,6 +209,22 @@ func getSaleSummaryBySerialId(ctx context.Context, userId, serialId string) (*do
 		return summaries[0], nil
 	}
 	return nil, errors.New("not single summary")
+}
+
+func getSaleSummaryMapBySerialIds(ctx context.Context, userId string, serialIds []string) (map[string]*do.SaleRecordSummary, error) {
+	resultMap := make(map[string]*do.SaleRecordSummary)
+	summaries := make([]*do.SaleRecordSummary, 0)
+	q := bson.M{"user_id": userId, "serial_id": bson.M{"$in": serialIds}}
+	err := dao.SaleRecordSummaryOp.Find(ctx, &summaries, q, nil, nil, 0, 0)
+	if err != nil {
+		logutil.Errorf("query sale sumary failed, err:%v", err)
+		return resultMap, err
+	}
+
+	for _, summary := range summaries {
+		resultMap[summary.SerialId] = summary
+	}
+	return resultMap, nil
 }
 
 func UpdateCustomerInfo(ctx context.Context, req *vo.UpdateCustomerInfoReq) error {

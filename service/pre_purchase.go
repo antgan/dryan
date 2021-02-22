@@ -45,12 +45,26 @@ func QueryAllPrePurchase(ctx context.Context) ([]*vo.PrePurchase, error) {
 		return nil, err
 	}
 
+	itemIds := make([]string, 0)
+	for _, purchase := range prePurchases {
+		itemIds = append(itemIds, purchase.ItemId)
+	}
+
+	itemMap, err := getItemMapByIds(ctx, itemIds)
+	if err != nil {
+		return nil, err
+	}
+
 	resultMap := make(map[string][]*vo.PrePurchaseItem)
 	for _, purchase := range prePurchases {
-		resultMap[purchase.Name] = append(resultMap[purchase.Name], &vo.PrePurchaseItem{
+		purchaseItem := &vo.PrePurchaseItem{
 			ItemId: purchase.ItemId,
 			Count:  purchase.Count,
-		})
+		}
+		if item, ok := itemMap[purchase.ItemId]; ok {
+			purchaseItem.ItemName = item.Name
+		}
+		resultMap[purchase.Name] = append(resultMap[purchase.Name], purchaseItem)
 	}
 
 	results := make([]*vo.PrePurchase, 0)

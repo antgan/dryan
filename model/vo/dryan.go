@@ -38,8 +38,9 @@ type PrePurchase struct {
 }
 
 type PrePurchaseItem struct {
-	ItemId string `json:"itemId"`
-	Count  int    `json:"count"`
+	ItemId   string `json:"itemId"`
+	ItemName string `json:"itemName"`
+	Count    int    `json:"count"`
 }
 
 type Purchase struct {
