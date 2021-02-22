@@ -11,6 +11,8 @@ func main() {
 	g := gin.Default()
 	dryanGroup := g.Group("/dryan")
 	{
+		dryanGroup.POST("/user/login", controller.QueryUserByName)
+
 		//商品管理
 		dryanGroup.POST("/item/add", controller.AddItem)
 		dryanGroup.POST("/item/get-all", controller.QueryAllItem)

@@ -4,6 +4,13 @@ import (
 	"time"
 )
 
+type UserVO struct {
+	Id         string    `json:"id"`
+	Name       string    `json:"name"`
+	Type       string    `json:"type"` //official官方；director董事
+	CreateTime time.Time `json:"create_time"`
+}
+
 type AddItemReq struct {
 	Name           string `json:"name"`
 	SalePrice      int    `json:"salePrice"`      //零售价
@@ -60,6 +67,10 @@ type PurchaseItem struct {
 
 type QueryByUserIdReq struct {
 	UserId string `json:"userId" binding:"required"`
+}
+
+type QueryUserByNameReq struct {
+	Name string `json:"name" binding:"required"`
 }
 
 //销售记录
