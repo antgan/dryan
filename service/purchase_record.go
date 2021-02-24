@@ -191,3 +191,29 @@ func calcTotalPriceByItems(items []*vo.PurchaseItem) int {
 	}
 	return totalPrice
 }
+
+func DeletePurchaseRecord(ctx context.Context, userId string, serialId string) error {
+	q := bson.M{"user_id": userId, "serial_id": serialId}
+	purchaseRecords := make([]*do.PurchaseRecord, 0)
+	err := dao.PurchaseRecordOp.Find(ctx, &purchaseRecords, q, nil, nil, 0, 0)
+	if err != nil {
+		logutil.Errorf("find purchase record by serial failed, err:%v", err)
+		return err
+	}
+
+	for _, record := range purchaseRecords {
+		//恢复库存
+		err = UpdateStockCount(ctx, userId, record.ItemId, record.Count, false)
+		if err != nil {
+			logutil.Errorf("update stock for delete purchase record failed, err:%v", err)
+			return err
+		}
+		err = dao.PurchaseRecordOp.DeleteById(ctx, record.Id)
+		if err != nil {
+			logutil.Errorf("delete purchase record failed, err:%v", err)
+			return err
+		}
+	}
+
+	return nil
+}

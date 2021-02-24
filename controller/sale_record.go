@@ -61,7 +61,7 @@ func UpdateCustomerInfo(ctx *gin.Context) {
 
 func DeleteSaleRecord(ctx *gin.Context) {
 	TAG := "DeleteSaleRecord"
-	var req vo.DeleteSaleRecordReq
+	var req vo.DeleteRecordReq
 	if err := ctx.Bind(&req); err != nil {
 		ctx.JSON(http.StatusOK, model.NewBindFailedResponse(TAG))
 		return

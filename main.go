@@ -31,6 +31,7 @@ func main() {
 
 		//入货管理
 		dryanGroup.POST("/purchase/add", controller.AddPurchaseRecord)
+		dryanGroup.POST("/purchase/delete", controller.DeletePurchaseRecord)
 		dryanGroup.POST("/purchase/get-all", controller.QueryAllPurchaseByUserId)
 
 		//销售管理

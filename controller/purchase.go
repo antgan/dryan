@@ -41,3 +41,20 @@ func QueryAllPurchaseByUserId(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusOK, model.NewDataResponse(allPurchases, TAG))
 }
+
+func DeletePurchaseRecord(ctx *gin.Context) {
+	TAG := "DeletePurchaseRecord"
+	var req vo.DeleteRecordReq
+	if err := ctx.Bind(&req); err != nil {
+		ctx.JSON(http.StatusOK, model.NewBindFailedResponse(TAG))
+		return
+	}
+
+	err := service.DeletePurchaseRecord(ctx, req.UserId, req.SerialId)
+	if err != nil {
+		ctx.JSON(http.StatusOK, model.NewErrorResponse(err, TAG))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, model.NewSuccessResponse(TAG))
+}

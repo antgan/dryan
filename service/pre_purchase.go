@@ -5,6 +5,7 @@ import (
 	"dryan/dao"
 	"dryan/model/do"
 	"dryan/model/vo"
+	"dryan/util"
 	"errors"
 	logutil "github.com/sirupsen/logrus"
 	"gopkg.in/mgo.v2/bson"
@@ -41,7 +42,7 @@ func AddPrePurchase(ctx context.Context, req *vo.PrePurchase) error {
 func QueryAllPrePurchase(ctx context.Context, req *vo.QueryByUserIdReq) ([]*vo.PrePurchase, error) {
 	q := bson.M{"user_id": req.UserId}
 	prePurchases := make([]*do.PrePurchase, 0)
-	err := dao.PrePurchaseOp.Find(ctx, &prePurchases, q, nil, nil, 0, 0)
+	err := dao.PrePurchaseOp.Find(ctx, &prePurchases, q, []string{"-create_time"}, nil, 0, 0)
 	if err != nil {
 		logutil.Errorf("query all pre purchase failed, err:%v", err)
 		return nil, err
@@ -49,7 +50,9 @@ func QueryAllPrePurchase(ctx context.Context, req *vo.QueryByUserIdReq) ([]*vo.P
 
 	itemIds := make([]string, 0)
 	for _, purchase := range prePurchases {
-		itemIds = append(itemIds, purchase.ItemId)
+		if !util.Contains(itemIds, purchase.ItemId) {
+			itemIds = append(itemIds, purchase.ItemId)
+		}
 	}
 
 	itemMap, err := getItemMapByIds(ctx, itemIds)
@@ -76,7 +79,23 @@ func QueryAllPrePurchase(ctx context.Context, req *vo.QueryByUserIdReq) ([]*vo.P
 			Items: items,
 		})
 	}
-	return results, nil
+
+	//排序
+	sortName := make([]string, 0)
+	for _, prePurchase := range prePurchases {
+		if !util.Contains(sortName, prePurchase.Name) {
+			sortName = append(sortName, prePurchase.Name)
+		}
+	}
+	sortResults := make([]*vo.PrePurchase, 0)
+	for _, name := range sortName {
+		for _, result := range results {
+			if name == result.Name {
+				sortResults = append(sortResults, result)
+			}
+		}
+	}
+	return sortResults, nil
 }
 
 func queryPrePurchaseByName(ctx context.Context, name string) (*do.PrePurchase, error) {
