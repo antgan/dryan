@@ -165,6 +165,14 @@ func QueryAllSaleRecordByUserId(ctx context.Context, userId string) ([]*vo.SaleR
 		return nil, err
 	}
 
+	//排序用
+	sortSerialIds := make([]string, 0)
+	for _, record := range saleRecords {
+		if !util.Contains(sortSerialIds, record.SerialId) {
+			sortSerialIds = append(sortSerialIds, record.SerialId)
+		}
+	}
+
 	//收集所有商品id，为了补充name
 	allItemIds := make([]string, 0)
 	for _, record := range saleRecords {
@@ -190,11 +198,7 @@ func QueryAllSaleRecordByUserId(ctx context.Context, userId string) ([]*vo.SaleR
 	}
 
 	//聚合最终展示的vo
-	serialIds := make([]string, 0)
-	for serialId, _ := range itemsGroupBySerial {
-		serialIds = append(serialIds, serialId)
-	}
-	summaryMap, err := getSaleSummaryMapBySerialIds(ctx, userId, serialIds)
+	summaryMap, err := getSaleSummaryMapBySerialIds(ctx, userId, sortSerialIds)
 	if err != nil {
 		logutil.Errorf("get sale summary by serial ids failed, err:%v", err)
 		return nil, err
@@ -224,7 +228,17 @@ func QueryAllSaleRecordByUserId(ctx context.Context, userId string) ([]*vo.SaleR
 		})
 	}
 
-	return results, nil
+	//Map无序，按照DB顺序排序
+	sortResults := make([]*vo.SaleRecordVO, 0)
+	for _, sortSerialId := range sortSerialIds {
+		for _, result := range results {
+			if sortSerialId == result.SerialId {
+				sortResults = append(sortResults, result)
+			}
+		}
+	}
+
+	return sortResults, nil
 }
 
 func getSaleSummaryBySerialId(ctx context.Context, userId, serialId string) (*do.SaleRecordSummary, error) {

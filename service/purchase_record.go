@@ -152,7 +152,24 @@ func QueryPurchaseByUserId(ctx context.Context, userId string) ([]*vo.Purchase, 
 		})
 	}
 
-	return results, nil
+	//排序
+	sortSerialIds := make([]string, 0)
+	for _, record := range purchaseRecords {
+		if !util.Contains(sortSerialIds, record.SerialId) {
+			sortSerialIds = append(sortSerialIds, record.SerialId)
+		}
+	}
+	//Map无序，按照DB顺序排序
+	sortResults := make([]*vo.Purchase, 0)
+	for _, sortSerialId := range sortSerialIds {
+		for _, result := range results {
+			if sortSerialId == result.SerialId {
+				sortResults = append(sortResults, result)
+			}
+		}
+	}
+
+	return sortResults, nil
 }
 
 func getItemNameMapping(ctx context.Context, allItemIds []string) (map[string]string, error) {
