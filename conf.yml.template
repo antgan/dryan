@@ -1,0 +1,14 @@
+port: 9999
+
+databases:
+  -
+    key:
+    type:
+    host:
+    user: ""
+    password: ""
+    name:
+    ext:
+      authSource: admin
+      mode: 2
+      maxPoolSize: 2
