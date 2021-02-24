@@ -137,3 +137,8 @@ type SelfConsumeVO struct {
 	Count      int    `json:"count"`
 	UpdateTime string `json:"updateTime"`
 }
+
+type DeleteSaleRecordReq struct {
+	UserId   string `json:"userId" binding:"required"`
+	SerialId string `json:"serialId" binding:"required` //流水号
+}

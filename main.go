@@ -36,6 +36,7 @@ func main() {
 		//销售管理
 		dryanGroup.POST("/sale/add", controller.AddSaleRecord)
 		dryanGroup.POST("/sale/get-all", controller.QueryAllSaleRecordUserId)
+		dryanGroup.POST("/sale/delete", controller.DeleteSaleRecord)
 		dryanGroup.POST("/sale/update-customer-info", controller.UpdateCustomerInfo)
 	}
 

@@ -132,14 +132,27 @@ func getDiscountLevel(saleRecord *vo.SaleRecordVO, itemMap map[string]*do.Item) 
 	for _, saleItem := range saleRecord.Items {
 		fullPrice += itemMap[saleItem.ItemId].SalePrice * saleItem.Count
 	}
-
+	isMixed := len(saleRecord.Items) > 1 //混装
 	discountLevel := 0
-	if fullPrice > 675 && fullPrice < 2600 {
-		discountLevel = 1
+	if isMixed {
+		if fullPrice < 1850 {
+			discountLevel = 0
+		}
+		if fullPrice >= 1850 && fullPrice < 2600 {
+			discountLevel = 1
+		}
+		if fullPrice >= 2600 {
+			discountLevel = 2
+		}
+	} else {
+		if fullPrice >= 650 && fullPrice < 1850 {
+			discountLevel = 1
+		}
+		if fullPrice >= 2600 {
+			discountLevel = 2
+		}
 	}
-	if fullPrice >= 2600 {
-		discountLevel = 2
-	}
+
 	return discountLevel
 }
 
@@ -292,6 +305,38 @@ func UpdateCustomerInfo(ctx context.Context, req *vo.UpdateCustomerInfoReq) erro
 	err = dao.SaleRecordSummaryOp.UpdateById(ctx, summary.Id, updateMap)
 	if err != nil {
 		logutil.Errorf("update summary failed, err:%v", err)
+		return err
+	}
+
+	return nil
+}
+
+func DeleteSaleRecord(ctx context.Context, userId string, serialId string) error {
+	q := bson.M{"user_id": userId, "serial_id": serialId}
+	saleRecords := make([]*do.SaleRecord, 0)
+	err := dao.SaleRecordOp.Find(ctx, &saleRecords, q, nil, nil, 0, 0)
+	if err != nil {
+		logutil.Errorf("find sale record by serial failed, err:%v", err)
+		return err
+	}
+
+	for _, record := range saleRecords {
+		//恢复库存
+		err = UpdateStockCount(ctx, userId, record.ItemId, record.Count, true)
+		if err != nil {
+			logutil.Errorf("update stock for delete sale record failed, err:%v", err)
+			return err
+		}
+		err = dao.SaleRecordOp.DeleteById(ctx, record.Id)
+		if err != nil {
+			logutil.Errorf("delete sale record failed, err:%v", err)
+			return err
+		}
+	}
+	//删除summary
+	err = dao.SaleRecordSummaryOp.Delete(ctx, q)
+	if err != nil {
+		logutil.Errorf("delete summary failed, serialId:%s, err:%v", serialId, err)
 		return err
 	}
 

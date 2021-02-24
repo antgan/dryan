@@ -58,3 +58,20 @@ func UpdateCustomerInfo(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusOK, model.NewSuccessResponse(TAG))
 }
+
+func DeleteSaleRecord(ctx *gin.Context) {
+	TAG := "DeleteSaleRecord"
+	var req vo.DeleteSaleRecordReq
+	if err := ctx.Bind(&req); err != nil {
+		ctx.JSON(http.StatusOK, model.NewBindFailedResponse(TAG))
+		return
+	}
+
+	err := service.DeleteSaleRecord(ctx, req.UserId, req.SerialId)
+	if err != nil {
+		ctx.JSON(http.StatusOK, model.NewErrorResponse(err, TAG))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, model.NewSuccessResponse(TAG))
+}
