@@ -7,6 +7,7 @@ import (
 	"dryan/model/vo"
 	"dryan/util"
 	"errors"
+	"fmt"
 	logutil "github.com/sirupsen/logrus"
 	"gopkg.in/mgo.v2/bson"
 	"time"
@@ -31,6 +32,12 @@ func AddSaleRecord(ctx context.Context, saleRecord *vo.SaleRecordVO) error {
 	if err != nil {
 		return err
 	}
+	//校验库存还够不够
+	err = checkStockByItem(ctx, saleRecord, itemMap)
+	if err != nil {
+		return err
+	}
+
 	purchasePriceMapping, err := getPurchasePriceMapping(ctx, itemMap, user.Type)
 	if err != nil {
 		return err
@@ -47,6 +54,8 @@ func AddSaleRecord(ctx context.Context, saleRecord *vo.SaleRecordVO) error {
 	serialId := util.NewUUID()
 	now := time.Now()
 	totalProfit := 0
+	totalSalePrice := 0
+	totalPurchasePrice := 0
 	for _, item := range saleRecord.Items {
 		profit := (salePriceMapping[item.ItemId] - purchasePriceMapping[item.ItemId]) * item.Count
 		saleRecordDO := &do.SaleRecord{
@@ -64,6 +73,8 @@ func AddSaleRecord(ctx context.Context, saleRecord *vo.SaleRecordVO) error {
 
 		saleRecords = append(saleRecords, saleRecordDO)
 		totalProfit += profit
+		totalSalePrice += saleRecordDO.SalePrice * saleRecordDO.Count
+		totalPurchasePrice += saleRecordDO.PurchasePrice * saleRecordDO.Count
 	}
 
 	//插入销售记录和库存
@@ -80,14 +91,16 @@ func AddSaleRecord(ctx context.Context, saleRecord *vo.SaleRecordVO) error {
 		}
 	}
 	saleSummary := &do.SaleRecordSummary{
-		Id:           bson.NewObjectId(),
-		UserId:       saleRecord.UserId,
-		SerialId:     serialId,
-		Profit:       totalProfit,
-		CustomerName: saleRecord.CustomerName,
-		Address:      saleRecord.Address,
-		CreateTime:   now,
-		UpdateTime:   now,
+		Id:                 bson.NewObjectId(),
+		UserId:             saleRecord.UserId,
+		SerialId:           serialId,
+		Profit:             totalProfit,
+		TotalPurchasePrice: totalPurchasePrice,
+		TotalSalePrice:     totalSalePrice,
+		CustomerName:       saleRecord.CustomerName,
+		Address:            saleRecord.Address,
+		CreateTime:         now,
+		UpdateTime:         now,
 	}
 
 	err = dao.SaleRecordSummaryOp.Insert(ctx, saleSummary)
@@ -96,6 +109,21 @@ func AddSaleRecord(ctx context.Context, saleRecord *vo.SaleRecordVO) error {
 		return err
 	}
 
+	return nil
+}
+
+func checkStockByItem(ctx context.Context, saleRecord *vo.SaleRecordVO, itemMap map[string]*do.Item) error {
+	stockMap, err := queryStockMapByUserId(ctx, saleRecord.UserId)
+	if err != nil {
+		logutil.Errorf("query stock failed, err:%v", err)
+		return err
+	}
+	for _, item := range saleRecord.Items {
+		stock := stockMap[item.ItemId]
+		if item.Count > stock.RemainCount {
+			return errors.New(fmt.Sprintf("%s库存不足", itemMap[item.ItemId].Name))
+		}
+	}
 	return nil
 }
 
@@ -180,16 +208,19 @@ func QueryAllSaleRecordByUserId(ctx context.Context, userId string) ([]*vo.SaleR
 			return nil, errors.New("summary not found")
 		}
 		results = append(results, &vo.SaleRecordVO{
-			UserId:        userId,
-			SerialId:      serialId,
-			Items:         items,
-			Profit:        summary.Profit,
-			CustomerName:  summary.CustomerName,
-			Address:       summary.Address,
-			ExpressNumber: summary.ExpressNumber,
-			ExpressTime:   summary.ExpressTime,
-			CreateTime:    summary.CreateTime,
-			UpdateTime:    summary.UpdateTime,
+			UserId:             userId,
+			SerialId:           serialId,
+			Items:              items,
+			Profit:             summary.Profit,
+			TotalSalePrice:     summary.TotalSalePrice,
+			TotalPurchasePrice: summary.TotalPurchasePrice,
+			CustomerName:       summary.CustomerName,
+			Address:            summary.Address,
+			Logistics:          summary.Logistics,
+			ExpressNumber:      summary.ExpressNumber,
+			ExpressTime:        util.FormatTime(summary.ExpressTime),
+			CreateTime:         util.FormatTime(summary.CreateTime),
+			UpdateTime:         util.FormatTime(summary.UpdateTime),
 		})
 	}
 

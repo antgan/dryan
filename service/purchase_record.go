@@ -148,7 +148,7 @@ func QueryPurchaseByUserId(ctx context.Context, userId string) ([]*vo.Purchase, 
 			SerialId:           serialId,
 			Items:              items,
 			TotalPurchasePrice: calcTotalPriceByItems(items),
-			CreateTime:         timeGroupBySerial[serialId],
+			CreateTime:         util.FormatTime(timeGroupBySerial[serialId]),
 		})
 	}
 

@@ -8,36 +8,36 @@ import (
 	"net/http"
 )
 
-func QueryUserByName(ctx *gin.Context) {
-	TAG := "QueryUserByName"
-	var req vo.QueryUserByNameReq
+func AddSelfConsume(ctx *gin.Context) {
+	TAG := "AddSelfConsume"
+	var req vo.AddSelfConsumeReq
 	if err := ctx.Bind(&req); err != nil {
 		ctx.JSON(http.StatusOK, model.NewBindFailedResponse(TAG))
 		return
 	}
 
-	userVO, err := service.QueryUserByName(ctx, req.Name)
-	if err != nil {
-		ctx.JSON(http.StatusOK, model.NewErrorResponse(err, TAG))
-		return
-	}
-
-	ctx.JSON(http.StatusOK, model.NewDataResponse(userVO, TAG))
-}
-
-func AddUser(ctx *gin.Context) {
-	TAG := "AddUser"
-	var req vo.AddUserReq
-	if err := ctx.Bind(&req); err != nil {
-		ctx.JSON(http.StatusOK, model.NewBindFailedResponse(TAG))
-		return
-	}
-
-	err := service.AddUser(ctx, &req)
+	err := service.AddSelfConsume(ctx, &req)
 	if err != nil {
 		ctx.JSON(http.StatusOK, model.NewErrorResponse(err, TAG))
 		return
 	}
 
 	ctx.JSON(http.StatusOK, model.NewSuccessResponse(TAG))
+}
+
+func QueryAllSelfConsume(ctx *gin.Context) {
+	TAG := "QueryAllSelfConsume"
+	var req vo.QueryByUserIdReq
+	if err := ctx.Bind(&req); err != nil {
+		ctx.JSON(http.StatusOK, model.NewBindFailedResponse(TAG))
+		return
+	}
+
+	consumes, err := service.QueryAllSelfConsume(ctx, req.UserId)
+	if err != nil {
+		ctx.JSON(http.StatusOK, model.NewErrorResponse(err, TAG))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, model.NewDataResponse(consumes, TAG))
 }

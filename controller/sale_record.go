@@ -26,7 +26,7 @@ func AddSaleRecord(ctx *gin.Context) {
 }
 
 func QueryAllSaleRecordUserId(ctx *gin.Context) {
-	TAG := "QueryAllPurchaseByUserId"
+	TAG := "QueryAllSaleRecordUserId"
 	var req vo.QueryByUserIdReq
 	if err := ctx.Bind(&req); err != nil {
 		ctx.JSON(http.StatusOK, model.NewBindFailedResponse(TAG))

@@ -1,12 +1,14 @@
 package util
 
 import (
+	"dryan/constant"
 	"encoding/hex"
 	"errors"
 	"fmt"
 	"github.com/google/uuid"
 	"gopkg.in/mgo.v2/bson"
 	"strings"
+	"time"
 )
 
 func StringToObjectId(id string) (bson.ObjectId, error) {
@@ -41,4 +43,11 @@ func Contains(s []string, e string) bool {
 		}
 	}
 	return false
+}
+
+func FormatTime(time time.Time) string {
+	if time.IsZero() {
+		return ""
+	}
+	return time.Format(constant.DATETIME_FORMAT)
 }

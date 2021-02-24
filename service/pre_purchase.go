@@ -23,6 +23,7 @@ func AddPrePurchase(ctx context.Context, req *vo.PrePurchase) error {
 	for _, item := range req.Items {
 		prePurchaseItem := &do.PrePurchase{
 			Id:         bson.NewObjectId(),
+			UserId:     req.UserId,
 			Name:       req.Name,
 			ItemId:     item.ItemId,
 			Count:      item.Count,
@@ -37,9 +38,10 @@ func AddPrePurchase(ctx context.Context, req *vo.PrePurchase) error {
 	return nil
 }
 
-func QueryAllPrePurchase(ctx context.Context) ([]*vo.PrePurchase, error) {
+func QueryAllPrePurchase(ctx context.Context, req *vo.QueryByUserIdReq) ([]*vo.PrePurchase, error) {
+	q := bson.M{"user_id": req.UserId}
 	prePurchases := make([]*do.PrePurchase, 0)
-	err := dao.PrePurchaseOp.Find(ctx, &prePurchases, nil, nil, nil, 0, 0)
+	err := dao.PrePurchaseOp.Find(ctx, &prePurchases, q, nil, nil, 0, 0)
 	if err != nil {
 		logutil.Errorf("query all pre purchase failed, err:%v", err)
 		return nil, err

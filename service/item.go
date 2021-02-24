@@ -6,12 +6,17 @@ import (
 	"dryan/model/do"
 	"dryan/model/vo"
 	"dryan/util"
+	"errors"
 	logutil "github.com/sirupsen/logrus"
 	"gopkg.in/mgo.v2/bson"
 	"time"
 )
 
 func AddItem(ctx context.Context, req *vo.AddItemReq) error {
+	if req.SalePrice == 0 || req.DiscountPrice1 == 0 || req.DiscountPrice2 == 0 ||
+		req.OfficialPrice == 0 || req.DirectorPrice == 0 {
+		return errors.New("价格不能为0")
+	}
 	item := &do.Item{
 		Id:             bson.NewObjectId(),
 		Name:           req.Name,
@@ -47,7 +52,7 @@ func populateItemVO(item *do.Item) *vo.ItemVO {
 		DiscountPrice2: item.DiscountPrice2,
 		OfficialPrice:  item.OfficialPrice,
 		DirectorPrice:  item.DirectorPrice,
-		CreateTime:     item.CreateTime,
+		CreateTime:     util.FormatTime(item.CreateTime),
 	}
 	return itemVO
 }

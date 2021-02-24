@@ -4,14 +4,22 @@ import (
 	"dryan/common"
 	"dryan/controller"
 	_ "dryan/db"
+	"dryan/middleware"
 	"github.com/gin-gonic/gin"
 )
 
 func main() {
 	g := gin.Default()
+	g.Use(middleware.Cors())
 	dryanGroup := g.Group("/dryan")
 	{
+		dryanGroup.POST("/user/add", controller.AddUser)
 		dryanGroup.POST("/user/login", controller.QueryUserByName)
+
+		//库存查询
+		dryanGroup.POST("/stock/get-all", controller.QueryStockByUserId)
+		dryanGroup.POST("/self-consume/add", controller.AddSelfConsume)
+		dryanGroup.POST("/self-consume/get-all", controller.QueryAllSelfConsume)
 
 		//商品管理
 		dryanGroup.POST("/item/add", controller.AddItem)

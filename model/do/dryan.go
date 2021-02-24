@@ -55,10 +55,12 @@ type SaleRecord struct {
 }
 
 type SaleRecordSummary struct {
-	Id       bson.ObjectId `bson:"_id"`
-	UserId   string        `bson:"user_id"`
-	SerialId string        `bson:"serial_id"` //流水号
-	Profit   int           `bson:"profit"`    //总利润
+	Id                 bson.ObjectId `bson:"_id"`
+	UserId             string        `bson:"user_id"`
+	SerialId           string        `bson:"serial_id"`            //流水号
+	Profit             int           `bson:"profit"`               //总利润
+	TotalPurchasePrice int           `bson:"total_purchase_price"` //总入货
+	TotalSalePrice     int           `bson:"total_sale_price"`     //总销售
 
 	//顾客信息
 	CustomerName  string    `bson:"customer_name"`
@@ -74,8 +76,18 @@ type SaleRecordSummary struct {
 //预设进货套餐
 type PrePurchase struct {
 	Id         bson.ObjectId `bson:"_id"`
+	UserId     string        `bson:"user_id"`
 	Name       string        `bson:"name"` //预设名称，唯一
 	ItemId     string        `bson:"item_id"`
 	Count      int           `bson:"count"`
 	CreateTime time.Time     `bson:"create_time"`
+}
+
+//偷吃记录
+type SelfConsume struct {
+	Id         bson.ObjectId `bson:"_id"`
+	UserId     string        `bson:"user_id"`
+	ItemId     string        `bson:"item_id"`
+	Count      int           `bson:"count"`
+	UpdateTime time.Time     `bson:"update_time"`
 }
